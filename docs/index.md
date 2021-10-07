@@ -15,6 +15,7 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
+import re
 ```
 
 ## Search Result Data
@@ -115,7 +116,7 @@ jobs_df
     <tr>
       <th>2</th>
       <td>Business Analyst</td>
-      <td>Orion Health</td>
+      <td>IG Wealth Management</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
@@ -126,14 +127,14 @@ jobs_df
     </tr>
     <tr>
       <th>4</th>
-      <td>Business Analyst Intern (4 months)</td>
-      <td>IBM Canada</td>
-      <td>Toronto, ON+1 location</td>
+      <td>Business Analyst</td>
+      <td>Orion Health</td>
+      <td>Toronto, ON</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>Business Analyst</td>
-      <td>ThreePDS Inc</td>
+      <td>Intern, Business Analyst</td>
+      <td>Equitable Bank</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
@@ -144,32 +145,32 @@ jobs_df
     </tr>
     <tr>
       <th>7</th>
-      <td>Intern, Business Analyst</td>
-      <td>Equitable Bank</td>
-      <td>Toronto, ON</td>
+      <td>Business Analyst Intern (4 months)</td>
+      <td>IBM Canada</td>
+      <td>Toronto, ON+1 location</td>
     </tr>
     <tr>
       <th>8</th>
+      <td>Business Analyst</td>
+      <td>ThreePDS Inc</td>
+      <td>Toronto, ON</td>
+    </tr>
+    <tr>
+      <th>9</th>
       <td>Analyst, Business Intelligence</td>
       <td>Bell Canada</td>
       <td>Don Mills, ON+1 location</td>
     </tr>
     <tr>
-      <th>9</th>
-      <td>Junior Business Analyst (6 month contract)</td>
-      <td>H&amp;M</td>
-      <td>Toronto, ON</td>
-    </tr>
-    <tr>
       <th>10</th>
-      <td>Jr. / Int. Business Analyst</td>
-      <td>JLL</td>
-      <td>Toronto, ON</td>
+      <td>business management analyst</td>
+      <td>ShoreWise Consulting LLC</td>
+      <td>Mississauga, ON•Remote</td>
     </tr>
     <tr>
       <th>11</th>
-      <td>Junior Business Analyst</td>
-      <td>DLT Labs</td>
+      <td>Junior Business Analyst (6 month contract)</td>
+      <td>H&amp;M</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
@@ -180,14 +181,14 @@ jobs_df
     </tr>
     <tr>
       <th>13</th>
-      <td>business management analyst</td>
-      <td>ShoreWise Consulting LLC</td>
-      <td>Mississauga, ON•Remote</td>
+      <td>Jr. / Int. Business Analyst</td>
+      <td>JLL</td>
+      <td>Toronto, ON</td>
     </tr>
     <tr>
       <th>14</th>
-      <td>Business Support Analyst</td>
-      <td>BMO Financial Group</td>
+      <td>Research and Business Analyst (Business Planni...</td>
+      <td>Metrolinx</td>
       <td>Toronto, ON</td>
     </tr>
   </tbody>
@@ -229,6 +230,7 @@ shops_html = soup.find_all('div', class_="arrange-unit__09f24__eFC_S arrange-uni
 #Creating an empty dataframe with a column to store all values we are interested in
 shops_df = pd.DataFrame(columns=['Coffee Shop Name', 'Number of Reviews', 'Location'])
 
+
 for shop in shops_html:
     #Extracting the desired html elements
     shop_name_html = shop.find('a', class_="css-og60gk")
@@ -245,7 +247,18 @@ for shop in shops_html:
         number_of_reviews = number_of_reviews_html.text.strip()
         
         #We need to use .find() a second time to access the <span> tag within the <p> tag
-        location = location_html.find('span', class_="css-e81eai").text.strip()
+        #The class "css-e81eai" is shared by another element on the page. In those cases the class="some_class css-e81eai", but we are not interested in those values
+        #We use regular expressions to identify if there are additional classes present
+        # '\\b class_name' allows us to check "css-e81eai" has a whitespace before it indicating another class'
+        location_exact = location_html.find('span', class_=re.compile("\\b css-e81eai"))
+       
+        #Again, we get an issue with some Nonetype objects appearing when we select the html elements. 
+        #The if statement below allows us to avoid any Nonetype values 
+        if location_exact is None:
+            location = location_html.find('span', class_=("css-e81eai")).text.strip()
+        else:
+            #For Coffee Shops do not have an area listed so for those we set a default value
+            location =  "Area Not Listed"
         
         df = {'Coffee Shop Name':shop_name, 'Number of Reviews':number_of_reviews, 'Location':location}
         
@@ -321,25 +334,25 @@ shops_df
       <th>6</th>
       <td>The Palm Coffee Bar</td>
       <td>342</td>
-      <td>$$</td>
+      <td>Area Not Listed</td>
     </tr>
     <tr>
       <th>7</th>
+      <td>Coffee Signal</td>
+      <td>17</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>8</th>
       <td>Maru Coffee</td>
       <td>287</td>
       <td>Los Feliz</td>
     </tr>
     <tr>
-      <th>8</th>
-      <td>Neighborhood</td>
-      <td>88</td>
-      <td>Fairfax</td>
-    </tr>
-    <tr>
       <th>9</th>
-      <td>Coffee MCO</td>
-      <td>363</td>
-      <td>Pico-Union</td>
+      <td>Bungalow 40</td>
+      <td>87</td>
+      <td>Hollywood</td>
     </tr>
   </tbody>
 </table>
@@ -381,10 +394,21 @@ for i in range (1,5):
             #Extracting the text from the html elements
             shop_name = shop_name_html.text.strip()
             number_of_reviews = number_of_reviews_html.text.strip()
-
+           
             #We need to use .find() a second time to access the <span> tag within the <p> tag
-            location = location_html.find('span', class_="css-e81eai").text.strip()
+            #The class "css-e81eai" is shared by another element on the page. In those cases the class="some_class css-e81eai", but we are not interested in those values
+            #We use regular expressions to identify if there are additonally classes present
+            # '\\b class_name' allows us to check "css-e81eai" has a whitespace before it indicating another class is also present
+            location_exact = location_html.find('span', class_=re.compile("\\b css-e81eai"))
 
+            #Html elements without class ="some_class css-e81eai" will be Nonetypes. 
+            #The if statement below allows us to avoid any Nonetype values 
+            if location_exact is None:
+                location = location_html.find('span', class_=("css-e81eai")).text.strip()
+            else:
+                #Some Coffee Shops do not have an area listed so for those we set a defualt value
+                location =  "Area Not Listed"
+            
             df = {'Coffee Shop Name':shop_name, 'Number of Reviews':number_of_reviews, 'Location':location}
 
             shops_df = shops_df.append(df, ignore_index = True)
@@ -459,73 +483,73 @@ shops_df
       <th>6</th>
       <td>The Palm Coffee Bar</td>
       <td>342</td>
-      <td>$$</td>
+      <td>Area Not Listed</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>Maru Coffee</td>
-      <td>287</td>
-      <td>Los Feliz</td>
+      <td>Coffee Signal</td>
+      <td>17</td>
+      <td>Koreatown</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>Neighborhood</td>
-      <td>88</td>
-      <td>Fairfax</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>Coffee MCO</td>
-      <td>363</td>
-      <td>Pico-Union</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>Boxx Coffee Roasters</td>
-      <td>42</td>
-      <td>Arts District</td>
-    </tr>
-    <tr>
-      <th>11</th>
       <td>Maru Coffee</td>
       <td>287</td>
       <td>Los Feliz</td>
     </tr>
     <tr>
-      <th>12</th>
-      <td>Blackwood Coffee Bar</td>
-      <td>229</td>
+      <th>9</th>
+      <td>Bungalow 40</td>
+      <td>87</td>
       <td>Hollywood</td>
     </tr>
     <tr>
-      <th>13</th>
-      <td>CAFE/5</td>
-      <td>39</td>
-      <td>Jefferson Park</td>
-    </tr>
-    <tr>
-      <th>14</th>
+      <th>10</th>
       <td>Cafe De Mama</td>
       <td>92</td>
       <td>Harvard Heights</td>
     </tr>
     <tr>
-      <th>15</th>
+      <th>11</th>
+      <td>Blackwood Coffee Bar</td>
+      <td>229</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Boxx Coffee Roasters</td>
+      <td>42</td>
+      <td>Arts District</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Maru Coffee</td>
+      <td>287</td>
+      <td>Los Feliz</td>
+    </tr>
+    <tr>
+      <th>14</th>
       <td>Liberation Coffee House</td>
       <td>21</td>
       <td>Hollywood</td>
     </tr>
     <tr>
+      <th>15</th>
+      <td>CAFE/5</td>
+      <td>39</td>
+      <td>Jefferson Park</td>
+    </tr>
+    <tr>
       <th>16</th>
       <td>The Palm Coffee Bar</td>
       <td>342</td>
-      <td>$$</td>
+      <td>Area Not Listed</td>
     </tr>
     <tr>
       <th>17</th>
-      <td>Stella Coffee Beverly Hills</td>
-      <td>81</td>
-      <td>Carthay</td>
+      <td>Balcony Coffee and Tea</td>
+      <td>385</td>
+      <td>East Hollywood</td>
     </tr>
     <tr>
       <th>18</th>
@@ -541,183 +565,183 @@ shops_df
     </tr>
     <tr>
       <th>20</th>
-      <td>I coffee bar</td>
-      <td>60</td>
-      <td>Koreatown</td>
+      <td>Stereoscope Coffee Company</td>
+      <td>48</td>
+      <td>Echo Park</td>
     </tr>
     <tr>
       <th>21</th>
-      <td>6xs Coffee</td>
-      <td>93</td>
-      <td>Koreatown</td>
-    </tr>
-    <tr>
-      <th>22</th>
       <td>Balcony Coffee and Tea</td>
       <td>385</td>
       <td>East Hollywood</td>
     </tr>
     <tr>
-      <th>23</th>
-      <td>Bolt</td>
-      <td>429</td>
-      <td>Hollywood</td>
-    </tr>
-    <tr>
-      <th>24</th>
-      <td>Sharp Specialty Coffee</td>
-      <td>231</td>
-      <td>Wilshire Center</td>
-    </tr>
-    <tr>
-      <th>25</th>
+      <th>22</th>
       <td>Awesome Coffee</td>
       <td>649</td>
       <td>Koreatown</td>
     </tr>
     <tr>
+      <th>23</th>
+      <td>Stella Coffee Beverly Hills</td>
+      <td>81</td>
+      <td>Carthay</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Liberation Coffee House</td>
+      <td>21</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>Sharp Specialty Coffee</td>
+      <td>231</td>
+      <td>Wilshire Center</td>
+    </tr>
+    <tr>
       <th>26</th>
-      <td>Coffee Signal</td>
-      <td>17</td>
-      <td>Koreatown</td>
+      <td>Groundwork Coffee Co.</td>
+      <td>613</td>
+      <td>Hollywood</td>
     </tr>
     <tr>
       <th>27</th>
-      <td>Bricks &amp; Scones</td>
-      <td>1358</td>
-      <td>Larchmont</td>
+      <td>Bohemia</td>
+      <td>239</td>
+      <td>Hollywood</td>
     </tr>
     <tr>
       <th>28</th>
-      <td>Nothing But Coffee</td>
-      <td>198</td>
-      <td>Koreatown</td>
-    </tr>
-    <tr>
-      <th>29</th>
       <td>Honey &amp; Bacon Coffee House</td>
       <td>61</td>
       <td>Larchmont</td>
     </tr>
     <tr>
-      <th>30</th>
-      <td>Coffee and Plants</td>
-      <td>349</td>
-      <td>$</td>
-    </tr>
-    <tr>
-      <th>31</th>
-      <td>Balcony Coffee and Tea</td>
-      <td>385</td>
-      <td>East Hollywood</td>
-    </tr>
-    <tr>
-      <th>32</th>
-      <td>Alibi Coffee Co.</td>
-      <td>146</td>
-      <td>Harvard Heights</td>
-    </tr>
-    <tr>
-      <th>33</th>
-      <td>Rocketship Coffee</td>
-      <td>29</td>
+      <th>29</th>
+      <td>Fratelli Cafe</td>
+      <td>1672</td>
       <td>Fairfax</td>
     </tr>
     <tr>
-      <th>34</th>
+      <th>30</th>
       <td>The Coffee Company</td>
       <td>1829</td>
       <td>Westchester</td>
     </tr>
     <tr>
-      <th>35</th>
-      <td>6xs Coffee</td>
-      <td>93</td>
-      <td>Koreatown</td>
+      <th>31</th>
+      <td>Coffee and Plants</td>
+      <td>349</td>
+      <td>Area Not Listed</td>
     </tr>
     <tr>
-      <th>36</th>
+      <th>32</th>
+      <td>Bolt</td>
+      <td>429</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>Bluestone Lane</td>
+      <td>164</td>
+      <td>Hancock Park</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>Coffee Coffee</td>
+      <td>138</td>
+      <td>Area Not Listed</td>
+    </tr>
+    <tr>
+      <th>35</th>
       <td>Coffee Commissary</td>
       <td>738</td>
       <td>Beverly Grove</td>
     </tr>
     <tr>
+      <th>36</th>
+      <td>Alibi Coffee Co.</td>
+      <td>146</td>
+      <td>Harvard Heights</td>
+    </tr>
+    <tr>
       <th>37</th>
+      <td>Rocketship Coffee</td>
+      <td>29</td>
+      <td>Fairfax</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>6xs Coffee</td>
+      <td>93</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>39</th>
       <td>Coffee Dose</td>
       <td>125</td>
       <td>Beverly Grove</td>
     </tr>
     <tr>
-      <th>38</th>
-      <td>Coffee Coffee</td>
-      <td>138</td>
-      <td>$</td>
-    </tr>
-    <tr>
-      <th>39</th>
+      <th>40</th>
       <td>Haute Mess LA</td>
       <td>79</td>
       <td>Fairfax</td>
-    </tr>
-    <tr>
-      <th>40</th>
-      <td>Verve Coffee Roasters</td>
-      <td>411</td>
-      <td>$$</td>
     </tr>
     <tr>
       <th>41</th>
-      <td>Intelligentsia Coffee</td>
-      <td>1727</td>
-      <td>Silver Lake</td>
-    </tr>
-    <tr>
-      <th>42</th>
-      <td>Haute Mess LA</td>
-      <td>79</td>
-      <td>Fairfax</td>
-    </tr>
-    <tr>
-      <th>43</th>
-      <td>Kumquat Coffee</td>
-      <td>154</td>
-      <td>Highland Park</td>
-    </tr>
-    <tr>
-      <th>44</th>
       <td>Tilt Coffee Bar</td>
       <td>488</td>
       <td>Downtown</td>
     </tr>
     <tr>
-      <th>45</th>
-      <td>Intelligentsia Coffee</td>
-      <td>46</td>
-      <td>Hollywood</td>
+      <th>42</th>
+      <td>La La Land Kind Cafe</td>
+      <td>105</td>
+      <td>Area Not Listed</td>
     </tr>
     <tr>
-      <th>46</th>
+      <th>43</th>
+      <td>Verve Coffee Roasters</td>
+      <td>411</td>
+      <td>Area Not Listed</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>Intelligentsia Coffee</td>
+      <td>1727</td>
+      <td>Silver Lake</td>
+    </tr>
+    <tr>
+      <th>45</th>
       <td>Bricks &amp; Scones</td>
       <td>1358</td>
       <td>Larchmont</td>
     </tr>
     <tr>
-      <th>47</th>
-      <td>Cafe Nemo</td>
-      <td>8</td>
-      <td>Arlington Heights</td>
+      <th>46</th>
+      <td>Kumquat Coffee</td>
+      <td>154</td>
+      <td>Highland Park</td>
     </tr>
     <tr>
-      <th>48</th>
+      <th>47</th>
       <td>Dam Good Coffee</td>
       <td>2</td>
       <td>Mid-Wilshire</td>
     </tr>
     <tr>
+      <th>48</th>
+      <td>Intelligentsia Coffee</td>
+      <td>46</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
       <th>49</th>
-      <td>Etiquette Coffee</td>
-      <td>6</td>
-      <td>Downtown</td>
+      <td>Cafe Nemo</td>
+      <td>8</td>
+      <td>Arlington Heights</td>
     </tr>
   </tbody>
 </table>
