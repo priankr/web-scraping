@@ -115,44 +115,44 @@ jobs_df
     <tr>
       <th>2</th>
       <td>Business Analyst</td>
-      <td>Accenture</td>
+      <td>Orion Health</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
       <th>3</th>
       <td>Business Analyst</td>
-      <td>Orion Health</td>
+      <td>Accenture</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>Intern, Business Analyst</td>
-      <td>Equitable Bank</td>
-      <td>Toronto, ON</td>
+      <td>Business Analyst Intern (4 months)</td>
+      <td>IBM Canada</td>
+      <td>Toronto, ON+1 location</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>Business Analyst / QA</td>
-      <td>MEDCAN</td>
-      <td>Toronto, ON</td>
-    </tr>
-    <tr>
-      <th>6</th>
       <td>Business Analyst</td>
       <td>ThreePDS Inc</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
+      <th>6</th>
+      <td>Business Analyst / QA</td>
+      <td>MEDCAN</td>
+      <td>Toronto, ON</td>
+    </tr>
+    <tr>
       <th>7</th>
-      <td>Analyst, Business Intelligence</td>
-      <td>Bell Canada</td>
-      <td>Don Mills, ON+1 location</td>
+      <td>Intern, Business Analyst</td>
+      <td>Equitable Bank</td>
+      <td>Toronto, ON</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>Business Analyst Intern (4 months)</td>
-      <td>IBM Canada</td>
-      <td>Toronto, ON+1 location</td>
+      <td>Analyst, Business Intelligence</td>
+      <td>Bell Canada</td>
+      <td>Don Mills, ON+1 location</td>
     </tr>
     <tr>
       <th>9</th>
@@ -162,33 +162,33 @@ jobs_df
     </tr>
     <tr>
       <th>10</th>
-      <td>Junior Business Operations Analyst, Ebooks</td>
-      <td>Rakuten Kobo Inc.</td>
+      <td>Jr. / Int. Business Analyst</td>
+      <td>JLL</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
       <th>11</th>
-      <td>business management analyst</td>
-      <td>ShoreWise Consulting LLC</td>
-      <td>Mississauga, ON•Remote</td>
-    </tr>
-    <tr>
-      <th>12</th>
       <td>Junior Business Analyst</td>
       <td>DLT Labs</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
-      <th>13</th>
-      <td>Research and Business Analyst (Business Planni...</td>
-      <td>Metrolinx</td>
+      <th>12</th>
+      <td>Junior Business Operations Analyst, Ebooks</td>
+      <td>Rakuten Kobo Inc.</td>
       <td>Toronto, ON</td>
     </tr>
     <tr>
+      <th>13</th>
+      <td>business management analyst</td>
+      <td>ShoreWise Consulting LLC</td>
+      <td>Mississauga, ON•Remote</td>
+    </tr>
+    <tr>
       <th>14</th>
-      <td>analyst, business - computer systems</td>
-      <td>Harward International Inc</td>
-      <td>North York, ON</td>
+      <td>Business Support Analyst</td>
+      <td>BMO Financial Group</td>
+      <td>Toronto, ON</td>
     </tr>
   </tbody>
 </table>
@@ -301,45 +301,423 @@ shops_df
     </tr>
     <tr>
       <th>3</th>
-      <td>Blackwood Coffee Bar</td>
-      <td>229</td>
-      <td>Hollywood</td>
-    </tr>
-    <tr>
-      <th>4</th>
       <td>Coffee For Sasquatch</td>
       <td>312</td>
       <td>Hancock Park</td>
     </tr>
     <tr>
-      <th>5</th>
+      <th>4</th>
       <td>Document Coffee Bar</td>
       <td>592</td>
       <td>Koreatown</td>
     </tr>
     <tr>
-      <th>6</th>
-      <td>Maru Coffee</td>
-      <td>287</td>
-      <td>Los Feliz</td>
+      <th>5</th>
+      <td>Blackwood Coffee Bar</td>
+      <td>229</td>
+      <td>Hollywood</td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>6</th>
       <td>The Palm Coffee Bar</td>
       <td>342</td>
       <td>$$</td>
     </tr>
     <tr>
-      <th>8</th>
-      <td>Compelling Coffee</td>
-      <td>31</td>
-      <td>Hollywood</td>
+      <th>7</th>
+      <td>Maru Coffee</td>
+      <td>287</td>
+      <td>Los Feliz</td>
     </tr>
     <tr>
-      <th>9</th>
+      <th>8</th>
       <td>Neighborhood</td>
       <td>88</td>
       <td>Fairfax</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Coffee MCO</td>
+      <td>363</td>
+      <td>Pico-Union</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+### Yelp Listings: Multiple Pages
+
+We are interested in getting the data for the top 50 coffee shops. The desired information is located on multiple pages.
+
+
+```python
+# Each successive results page follows the pattern below
+#'https://www.yelp.com/search?find_desc=Coffee%20Shop&find_loc=Los%20Angeles%2C%20CA&start=10' where 10 indicates coffee shops ranked 11-20
+# Therefore a value of 20 would indicate coffee shops ranked 21-30 and so on
+url = 'https://www.yelp.com/search?find_desc=Coffee%20Shop&find_loc=Los%20Angeles%2C%20CA&start='
+
+#We are interested in the search results for the following pages so we will loop over a range and add the value we are interested to the string representing the url
+#The loop below will allow us to get results for the top 50 coffee shops in Los Angeles
+for i in range (1,5):
+    url_page = url+str(i*10)
+    page = requests.get(url_page)
+    
+    soup = BeautifulSoup(page.content, 'html.parser')
+    
+    shops_html = soup.find_all('div', class_="arrange-unit__09f24__eFC_S arrange-unit-fill__09f24__1bMmp border-color--default__09f24__3Epto")
+    
+    for shop in shops_html:
+        #Extracting the desired html elements
+        shop_name_html = shop.find('a', class_="css-og60gk")
+        number_of_reviews_html = shop.find('span', class_="reviewCount__09f24__3GsGY css-e81eai")
+        location_html = (shop.find('p', class_="css-1j7sdmt"))
+
+        #We get an issue with some Nonetype objects appearing when we select the html elements. 
+        #The if statement below allows us to avoid any Nonetype values 
+        if shop_name_html is not None and number_of_reviews_html is not None and location_html is not None:
+
+            #Extracting the text from the html elements
+            shop_name = shop_name_html.text.strip()
+            number_of_reviews = number_of_reviews_html.text.strip()
+
+            #We need to use .find() a second time to access the <span> tag within the <p> tag
+            location = location_html.find('span', class_="css-e81eai").text.strip()
+
+            df = {'Coffee Shop Name':shop_name, 'Number of Reviews':number_of_reviews, 'Location':location}
+
+            shops_df = shops_df.append(df, ignore_index = True)
+
+shops_df
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Coffee Shop Name</th>
+      <th>Number of Reviews</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Alibi Coffee</td>
+      <td>157</td>
+      <td>Larchmont</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Coffee Connection</td>
+      <td>627</td>
+      <td>Mar Vista</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Alchemist Coffee Project</td>
+      <td>1165</td>
+      <td>Wilshire Center</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Coffee For Sasquatch</td>
+      <td>312</td>
+      <td>Hancock Park</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Document Coffee Bar</td>
+      <td>592</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Blackwood Coffee Bar</td>
+      <td>229</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>The Palm Coffee Bar</td>
+      <td>342</td>
+      <td>$$</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Maru Coffee</td>
+      <td>287</td>
+      <td>Los Feliz</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Neighborhood</td>
+      <td>88</td>
+      <td>Fairfax</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Coffee MCO</td>
+      <td>363</td>
+      <td>Pico-Union</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Boxx Coffee Roasters</td>
+      <td>42</td>
+      <td>Arts District</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Maru Coffee</td>
+      <td>287</td>
+      <td>Los Feliz</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Blackwood Coffee Bar</td>
+      <td>229</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>CAFE/5</td>
+      <td>39</td>
+      <td>Jefferson Park</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Cafe De Mama</td>
+      <td>92</td>
+      <td>Harvard Heights</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Liberation Coffee House</td>
+      <td>21</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>The Palm Coffee Bar</td>
+      <td>342</td>
+      <td>$$</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Stella Coffee Beverly Hills</td>
+      <td>81</td>
+      <td>Carthay</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Fratelli Cafe</td>
+      <td>1672</td>
+      <td>Fairfax</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>I coffee bar</td>
+      <td>60</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>I coffee bar</td>
+      <td>60</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>6xs Coffee</td>
+      <td>93</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>Balcony Coffee and Tea</td>
+      <td>385</td>
+      <td>East Hollywood</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>Bolt</td>
+      <td>429</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Sharp Specialty Coffee</td>
+      <td>231</td>
+      <td>Wilshire Center</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>Awesome Coffee</td>
+      <td>649</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>Coffee Signal</td>
+      <td>17</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>Bricks &amp; Scones</td>
+      <td>1358</td>
+      <td>Larchmont</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>Nothing But Coffee</td>
+      <td>198</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>Honey &amp; Bacon Coffee House</td>
+      <td>61</td>
+      <td>Larchmont</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>Coffee and Plants</td>
+      <td>349</td>
+      <td>$</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>Balcony Coffee and Tea</td>
+      <td>385</td>
+      <td>East Hollywood</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>Alibi Coffee Co.</td>
+      <td>146</td>
+      <td>Harvard Heights</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>Rocketship Coffee</td>
+      <td>29</td>
+      <td>Fairfax</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>The Coffee Company</td>
+      <td>1829</td>
+      <td>Westchester</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>6xs Coffee</td>
+      <td>93</td>
+      <td>Koreatown</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>Coffee Commissary</td>
+      <td>738</td>
+      <td>Beverly Grove</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>Coffee Dose</td>
+      <td>125</td>
+      <td>Beverly Grove</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>Coffee Coffee</td>
+      <td>138</td>
+      <td>$</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>Haute Mess LA</td>
+      <td>79</td>
+      <td>Fairfax</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>Verve Coffee Roasters</td>
+      <td>411</td>
+      <td>$$</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>Intelligentsia Coffee</td>
+      <td>1727</td>
+      <td>Silver Lake</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>Haute Mess LA</td>
+      <td>79</td>
+      <td>Fairfax</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>Kumquat Coffee</td>
+      <td>154</td>
+      <td>Highland Park</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>Tilt Coffee Bar</td>
+      <td>488</td>
+      <td>Downtown</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>Intelligentsia Coffee</td>
+      <td>46</td>
+      <td>Hollywood</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>Bricks &amp; Scones</td>
+      <td>1358</td>
+      <td>Larchmont</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>Cafe Nemo</td>
+      <td>8</td>
+      <td>Arlington Heights</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>Dam Good Coffee</td>
+      <td>2</td>
+      <td>Mid-Wilshire</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>Etiquette Coffee</td>
+      <td>6</td>
+      <td>Downtown</td>
     </tr>
   </tbody>
 </table>
